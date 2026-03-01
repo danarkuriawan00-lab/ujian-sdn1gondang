@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Asesmen SDN 1 Gondang</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #0284c7;
+            --secondary-blue: #93c5fd;
+            --accent-green: #10b981;
+            --bg-gray: #f3f4f6;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            max-height: 850px;
+            background-color: #e5e7eb;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            position: relative;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 640px) {
+            .app-container {
+                height: 90vh;
+                border-radius: 24px;
+            }
+        }
+
+        .font-sahabat {
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.1em;
+            background: linear-gradient(to bottom, #1e293b, #334155);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(1px 1px 0px rgba(255,255,255,0.3));
+        }
+
+        .login-card {
+            background-color: var(--secondary-blue);
+            border-radius: 20px;
+            padding: 40px 24px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-masuk {
+            background-color: var(--accent-green);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-masuk:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-nav {
+            background-color: var(--primary-blue);
+            border-radius: 12px;
+            color: white;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .option-item {
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .selected-option {
+            background-color: #dbeafe !important;
+            border-color: #3b82f6 !important;
+            transform: translateX(8px);
+        }
+
+        #loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            color: white;
+        }
+
+        .input-field {
+            background-color: var(--primary-blue);
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            padding: 14px;
+            border-radius: 12px;
+            width: 100%;
+            border: 2px solid transparent;
+            outline: none;
+        }
+
+        .input-field::placeholder { color: rgba(255,255,255,0.7); }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container p-6" id="app">
+    <!-- Overlay Loading saat Kirim Data -->
+    <div id="loading-overlay">
+        <div class="animate-spin rounded-full h-14 w-14 border-4 border-blue-400 border-t-transparent mb-4"></div>
+        <p class="font-bold text-lg">Mengirim Jawaban...</p>
+    </div>
+
+    <!-- Screen 1: Login Siswa -->
+    <div id="login-screen" class="flex flex-col items-center">
+        <div class="mt-8 mb-6">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiUAgnz3M-C0b4aP4NCccOVpRTBjimetBgZhyphenhyphenkGcMIcG3YY7RhacnjOZFFonylLQGbQ0LQHR7n4cOk7XN8mDb9YmRrXgJi5q7yZCEEKpQ4CYuB9WaZLCNw35_qVPvcRTizOMvZXsYVqmAOSfxDv9bUmpB9z_-2G3ecR_C1CONgsQ5-5U5NA2B9rpU4zfJnZ/w200-h200/sdn%20gng%201.png" alt="Logo SDN 1 Gondang" class="w-28 h-28 object-contain">
+        </div>
+
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 leading-tight uppercase">Selamat Datang</h1>
+            <h2 class="text-5xl font-black mb-2 font-sahabat uppercase">Sahabat</h2>
+            <p class="text-[11px] text-gray-600 font-medium tracking-widest uppercase">
+                Sistem Asesmen Hasil Amanah Berprestasi Akurat & Terpercaya
+            </p>
+        </div>
+
+        <div class="w-full login-card">
+            <div class="space-y-4">
+                <input type="text" id="name" placeholder="NAMA LENGKAP" class="input-field uppercase">
+                <input type="number" id="absen" placeholder="NOMOR ABSEN" class="input-field">
+                <button onclick="startExam()" class="w-full py-4 mt-4 rounded-xl btn-masuk text-white font-bold text-lg shadow-lg uppercase">
+                    Mulai Ujian
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 2: Area Ujian -->
+    <div id="exam-screen" class="hidden flex flex-col h-full">
+        <div class="w-full bg-gray-300 rounded-full h-2 mb-6">
+            <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <div class="flex justify-between items-center mb-6">
+            <span class="bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-bold uppercase">
+                Soal <span id="current-number">1</span> / <span id="total-questions">0</span>
+            </span>
+            <span id="timer" class="text-gray-700 font-mono font-bold text-sm bg-white px-3 py-1 rounded-lg shadow-sm">00:00</span>
+        </div>
+        
+        <div class="flex-grow">
+            <div class="bg-white rounded-2xl p-6 shadow-sm mb-6 border-b-4 border-blue-200">
+                <p id="question-text" class="text-lg font-bold text-gray-800 leading-snug">Memuat soal...</p>
+            </div>
+            <div id="options-container" class="space-y-3"></div>
+        </div>
+
+        <div class="flex justify-between items-center mt-8 pb-6 gap-4">
+            <button onclick="prevQuestion()" id="prev-btn" class="btn-nav flex-1 opacity-50" disabled>Sebelumnya</button>
+            <button onclick="handleNext()" class="btn-nav flex-1" id="next-btn">Selanjutnya</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Selesai -->
+<div id="confirm-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="text-xl font-bold mb-2">Selesai Ujian?</h3>
+        <p class="text-gray-600 mb-6">Kirim jawaban sekarang untuk melihat hasil.</p>
+        <div class="flex gap-3">
+            <button onclick="hideConfirm()" class="flex-1 py-3 border-2 border-gray-200 rounded-xl font-bold text-gray-500">Batal</button>
+            <button onclick="finishExam()" class="flex-1 py-3 bg-green-500 text-white rounded-xl font-bold shadow-lg">Kirim</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /**
+     * URL Web App Google Apps Script Anda sudah terpasang.
+     */
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbz1sq6Ks2rC3lIdcA3i9TRLPebUdny0st73zmcZXI7HVVSZ63hxJWsz3_rVOH3L0gdO/exec'; 
+
+    // Daftar Soal Ujian
+const questions = [
+
+{ 
+    id: 1, 
+    text: "Hubungan saling ketergantungan antara makhluk hidup dan lingkungannya disebut ....", 
+    options: [{id:'A', text:'Populasi'}, {id:'B', text:'Habitat'}, {id:'C', text:'Ekosistem'}, {id:'D', text:'Komunitas'}], 
+    correct: 'C' 
+},
+
+{ 
+    id: 2, 
+    text: "Tumbuhan hijau dalam rantai makanan berperan sebagai ....", 
+    options: [{id:'A', text:'Konsumen'}, {id:'B', text:'Produsen'}, {id:'C', text:'Pengurai'}, {id:'D', text:'Predator'}], 
+    correct: 'B' 
+},
+
+{ 
+    id: 3, 
+    text: "Peristiwa perubahan air menjadi uap air karena panas matahari disebut ....", 
+    options: [{id:'A', text:'Kondensasi'}, {id:'B', text:'Evaporasi'}, {id:'C', text:'Presipitasi'}, {id:'D', text:'Infiltrasi'}], 
+    correct: 'B' 
+},
+
+{ 
+    id: 4, 
+    text: "Alat pernapasan manusia yang berfungsi sebagai tempat pertukaran oksigen dan karbon dioksida adalah ....", 
+    options: [{id:'A', text:'Hidung'}, {id:'B', text:'Trakea'}, {id:'C', text:'Paru-paru'}, {id:'D', text:'Diafragma'}], 
+    correct: 'C' 
+},
+
+{ 
+    id: 5, 
+    text: "Bagian darah yang berfungsi mengangkut oksigen adalah ....", 
+    options: [{id:'A', text:'Plasma darah'}, {id:'B', text:'Sel darah merah'}, {id:'C', text:'Sel darah putih'}, {id:'D', text:'Keping darah'}], 
+    correct: 'B' 
+},
+
+{ 
+    id: 6, 
+    text: "Perubahan wujud benda dari padat menjadi cair disebut ....", 
+    options: [{id:'A', text:'Membeku'}, {id:'B', text:'Mencair'}, {id:'C', text:'Menguap'}, {id:'D', text:'Menyublim'}], 
+    correct: 'B' 
+},
+
+{ 
+    id: 7, 
+    text: "Gaya yang ditimbulkan oleh tarikan atau dorongan disebut ....", 
+    options: [{id:'A', text:'Gaya magnet'}, {id:'B', text:'Gaya gesek'}, {id:'C', text:'Gaya otot'}, {id:'D', text:'Gaya listrik'}], 
+    correct: 'C' 
+},
+
+{ 
+    id: 8, 
+    text: "Contoh sumber energi alternatif adalah ....", 
+    options: [{id:'A', text:'Batu bara'}, {id:'B', text:'Minyak bumi'}, {id:'C', text:'Gas alam'}, {id:'D', text:'Energi surya'}], 
+    correct: 'D' 
+},
+
+{ 
+    id: 9, 
+    text: "Hewan yang memakan tumbuhan disebut ....", 
+    options: [{id:'A', text:'Karnivora'}, {id:'B', text:'Omnivora'}, {id:'C', text:'Herbivora'}, {id:'D', text:'Insektivora'}], 
+    correct: 'C' 
+},
+
+{ 
+    id: 10, 
+    text: "Contoh adaptasi hewan untuk melindungi diri adalah ....", 
+    options: [{id:'A', text:'Bunglon mengubah warna kulit'}, {id:'B', text:'Ayam bertelur'}, {id:'C', text:'Ikan berenang'}, {id:'D', text:'Sapi makan rumput'}], 
+    correct: 'A' 
+},
+
+{ 
+    id: 11, 
+    text: "Rantai makanan selalu dimulai dari ....", 
+    options: [{id:'A', text:'Konsumen'}, {id:'B', text:'Produsen'}, {id:'C', text:'Pengurai'}, {id:'D', text:'Predator'}], 
+    correct: 'B' 
+},
+
+{ 
+    id: 12, 
+    text: "Peristiwa turunnya air hujan dalam siklus air disebut ....", 
+    options: [{id:'A', text:'Evaporasi'}, {id:'B', text:'Kondensasi'}, {id:'C', text:'Presipitasi'}, {id:'D', text:'Transpirasi'}], 
+    correct: 'C' 
+},
+
+{ 
+    id: 13, 
+    text: "Magnet memiliki dua kutub, yaitu ....", 
+    options: [{id:'A', text:'Utara dan Timur'}, {id:'B', text:'Selatan dan Barat'}, {id:'C', text:'Utara dan Selatan'}, {id:'D', text:'Timur dan Barat'}], 
+    correct: 'C' 
+},
+
+{ 
+    id: 14, 
+    text: "Contoh benda yang dapat ditarik magnet adalah ....", 
+    options: [{id:'A', text:'Kayu'}, {id:'B', text:'Plastik'}, {id:'C', text:'Besi'}, {id:'D', text:'Kertas'}], 
+    correct: 'C' 
+},
+
+{ 
+    id: 15, 
+    text: "Organ yang berfungsi memompa darah ke seluruh tubuh adalah ....", 
+    options: [{id:'A', text:'Paru-paru'}, {id:'B', text:'Jantung'}, {id:'C', text:'Hati'}, {id:'D', text:'Ginjal'}], 
+    correct: 'B' 
+},
+
+{ 
+    id: 16, 
+    text: "Contoh perubahan fisika adalah ....", 
+    options: [{id:'A', text:'Kayu dibakar'}, {id:'B', text:'Besi berkarat'}, {id:'C', text:'Es mencair'}, {id:'D', text:'Kertas dibakar'}], 
+    correct: 'C' 
+},
+
+{ 
+    id: 17, 
+    text: "Gaya gesek dapat menyebabkan benda menjadi ....", 
+    options: [{id:'A', text:'Lebih cepat'}, {id:'B', text:'Berhenti'}, {id:'C', text:'Melayang'}, {id:'D', text:'Menghilang'}], 
+    correct: 'B' 
+},
+
+{ 
+    id: 18, 
+    text: "Salah satu cara menjaga kelestarian lingkungan adalah ....", 
+    options: [{id:'A', text:'Membuang sampah sembarangan'}, {id:'B', text:'Menebang hutan liar'}, {id:'C', text:'Melakukan reboisasi'}, {id:'D', text:'Membakar sampah di hutan'}], 
+    correct: 'C' 
+},
+
+{ 
+    id: 19, 
+    text: "Hewan yang memakan daging dan tumbuhan disebut ....", 
+    options: [{id:'A', text:'Karnivora'}, {id:'B', text:'Herbivora'}, {id:'C', text:'Omnivora'}, {id:'D', text:'Predator'}], 
+    correct: 'C' 
+},
+
+{ 
+    id: 20, 
+    text: "Bagian tumbuhan yang berfungsi menyerap air dan mineral dari tanah adalah ....", 
+    options: [{id:'A', text:'Daun'}, {id:'B', text:'Batang'}, {id:'C', text:'Akar'}, {id:'D', text:'Bunga'}], 
+    correct: 'C' 
+},
+
+{ 
+    id: 21, 
+    text: "Energi yang dihasilkan dari pergerakan air disebut energi ....", 
+    options: [{id:'A', text:'Panas'}, {id:'B', text:'Listrik'}, {id:'C', text:'Air (Hidro)'}, {id:'D', text:'Kimia'}], 
+    correct: 'C' 
+},
+
+{ 
+    id: 22, 
+    text: "Pengurai dalam ekosistem berfungsi untuk ....", 
+    options: [{id:'A', text:'Membuat makanan sendiri'}, {id:'B', text:'Memakan tumbuhan'}, {id:'C', text:'Menguraikan sisa makhluk hidup'}, {id:'D', text:'Memakan hewan lain'}], 
+    correct: 'C' 
+},
+
+{ 
+    id: 23, 
+    text: "Contoh simbiosis mutualisme adalah ....", 
+    options: [{id:'A', text:'Benalu pada pohon'}, {id:'B', text:'Kerbau dan burung jalak'}, {id:'C', text:'Harimau dan rusa'}, {id:'D', text:'Kucing dan tikus'}], 
+    correct: 'B' 
+},
+
+{ 
+    id: 24, 
+    text: "Lapisan udara yang menyelimuti bumi disebut ....", 
+    options: [{id:'A', text:'Litosfer'}, {id:'B', text:'Hidrosfer'}, {id:'C', text:'Atmosfer'}, {id:'D', text:'Biosfer'}], 
+    correct: 'C' 
+},
+
+{ 
+    id: 25, 
+    text: "Sumber energi utama bagi kehidupan di bumi adalah ....", 
+    options: [{id:'A', text:'Bulan'}, {id:'B', text:'Bintang'}, {id:'C', text:'Matahari'}, {id:'D', text:'Angin'}], 
+    correct: 'C' 
+}
+    ];
+
+    let currentQuestionIndex = 0;
+    let userAnswers = {};
+    let userData = { name: '', absen: '' };
+    let startTime;
+    let timerInterval;
+
+    function startExam() {
+        userData.name = document.getElementById('name').value.trim();
+        userData.absen = document.getElementById('absen').value.trim();
+
+        if (!userData.name || !userData.absen) {
+            alert("Harap masukkan Nama dan No Absen!");
+            return;
+        }
+
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('exam-screen').classList.remove('hidden');
+        document.getElementById('total-questions').innerText = questions.length;
+        
+        startTime = new Date();
+        timerInterval = setInterval(updateTimer, 1000);
+        renderQuestion();
+    }
+
+    function updateTimer() {
+        const diff = Math.floor((new Date() - startTime) / 1000);
+        const m = Math.floor(diff / 60).toString().padStart(2, '0');
+        const s = (diff % 60).toString().padStart(2, '0');
+        document.getElementById('timer').innerText = `${m}:${s}`;
+    }
+
+    function renderQuestion() {
+        const q = questions[currentQuestionIndex];
+        document.getElementById('current-number').innerText = currentQuestionIndex + 1;
+        document.getElementById('question-text').innerText = q.text;
+        document.getElementById('progress-bar').style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+        q.options.forEach(opt => {
+            const isSelected = userAnswers[currentQuestionIndex] === opt.id;
+            const div = document.createElement('div');
+            div.className = `option-item p-4 rounded-xl font-semibold flex items-center shadow-sm ${isSelected ? 'selected-option' : ''}`;
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full flex items-center justify-center mr-4 ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-blue-600'}">
+                    ${opt.id}
+                </div>
+                <span>${opt.text}</span>
+            `;
+            div.onclick = () => { 
+                userAnswers[currentQuestionIndex] = opt.id; 
+                renderQuestion(); 
+            };
+            container.appendChild(div);
+        });
+
+        document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+        document.getElementById('prev-btn').style.opacity = currentQuestionIndex === 0 ? '0.5' : '1';
+        document.getElementById('next-btn').innerText = currentQuestionIndex === questions.length - 1 ? "Selesai" : "Selanjutnya";
+    }
+
+    function handleNext() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion();
+        } else {
+            document.getElementById('confirm-modal').style.display = 'flex';
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
+    }
+
+    function hideConfirm() { 
+        document.getElementById('confirm-modal').style.display = 'none'; 
+    }
+
+    async function finishExam() {
+        hideConfirm();
+        clearInterval(timerInterval);
+        document.getElementById('loading-overlay').style.display = 'flex';
+
+        let scoreCount = 0;
+        questions.forEach((q, i) => { 
+            if (userAnswers[i] === q.correct) scoreCount++; 
+        });
+        const finalScore = Math.round((scoreCount / questions.length) * 100);
+
+        const payload = new URLSearchParams();
+        payload.append('timestamp', new Date().toLocaleString('id-ID'));
+        payload.append('nama', userData.name);
+        payload.append('absen', userData.absen);
+        payload.append('skor', finalScore);
+        payload.append('durasi', document.getElementById('timer').innerText);
+        payload.append('jawaban', JSON.stringify(userAnswers));
+
+        try {
+            await fetch(scriptURL, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                body: payload 
+            });
+            showResult(finalScore, scoreCount);
+        } catch (e) {
+            console.error("Gagal mengirim data:", e);
+            showResult(finalScore, scoreCount);
+        } finally {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+    }
+
+    function showResult(score, correctCount) {
+        document.getElementById('exam-screen').innerHTML = `
+            <div class="flex flex-col items-center justify-center text-center h-full py-10">
+                <h1 class="text-3xl font-black mb-2 uppercase">Hasil Ujian</h1>
+                <p class="text-gray-600 mb-8">${userData.name} (Absen: ${userData.absen})</p>
+                <div class="text-8xl font-black text-blue-600 mb-8">${score}</div>
+                <div class="bg-white rounded-2xl p-6 w-full shadow-sm border space-y-2 mb-8">
+                    <div class="flex justify-between"><span>Benar:</span><span class="font-bold text-green-600">${correctCount}</span></div>
+                    <div class="flex justify-between"><span>Salah:</span><span class="font-bold text-red-500">${questions.length - correctCount}</span></div>
+                    <div class="flex justify-between"><span>Waktu:</span><span class="font-bold">${document.getElementById('timer').innerText}</span></div>
+                </div>
+                <button onclick="location.reload()" class="btn-nav w-full py-4 text-lg uppercase shadow-lg">Kembali ke Awal</button>
+            </div>
+        `;
+    }
+</script>
+</body>
+</html>
